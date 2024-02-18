@@ -104,26 +104,28 @@ int main() {
             printf("Soy el proceso padre\n");
 
             // Crear un hilo para monitorear las llamadas al sistema
-            pthread_t thread;
-            int args[2] = {pid1, pid2};
-            pthread_create(&thread, NULL, monitor_thread, (void *)args);
+            pid_t monitor = fork();
+            if(monitor==0){
+                monitor_syscalls(pid1,pid2);
+            }
+          
 
             /*Se espera a que los procesos hijos terminen*/
             int status;
             waitpid(pid2, &status, 0);
             waitpid(pid2, &status, 0);
+            waitpid(monitor, &status, 0);
+            stat();
 
-            /*Se imprime el codigo de salida de los procesos hijos*/
+            /*
+            /*Se imprime el codigo de salida de los procesos hijos
             if(WIFEXITED(status)){
 
                 stat();
             } else {
                 printf("Ocurrio un error al terminar los procesos hijos");
             }
-            
-            // Esperar a que el hilo de monitoreo termine
-            pthread_join(thread, NULL);
-            printf("\nYa se acabó el hilo\n");
+            */
             
         }
     }
