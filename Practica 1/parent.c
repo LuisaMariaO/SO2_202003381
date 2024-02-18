@@ -22,7 +22,7 @@ void ctrlc_handler(int signal) {
 }
 
 //Después de recibir el ctrl+c
-void stat() {
+void stat(int pid1, int pid2, int monitor) {
     printf("\n");
     printf("Finalizando ejecución...\n");
     printf("|-------------------------------------------------|\n");
@@ -31,12 +31,15 @@ void stat() {
     printf("|Llamadas read: %d                                 |\n",c_read);
     printf("|Llamadas seek %d                                  |\n",c_seek);
     printf("|-------------------------------------------------|\n");
+    kill(pid1,SIGKILL);
+    kill(pid2,SIGKILL);
+    kill(monitor, SIGKILL);
     exit(0);
     
 }
 
 void monitor_syscalls(int pid1, int pid2) {
-  
+    
     char command[100];
     sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " > syscalls.log 2>&1");
     system(command);
@@ -115,7 +118,7 @@ int main() {
             waitpid(pid2, &status, 0);
             waitpid(pid2, &status, 0);
             waitpid(monitor, &status, 0);
-            stat();
+            stat(pid1,pid2, monitor);
 
             /*
             /*Se imprime el codigo de salida de los procesos hijos
