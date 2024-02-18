@@ -1,0 +1,20 @@
+#!/usr/bin/stap
+
+probe syscall.read {
+    if(pid() == $1 || pid() == $2){
+        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()))
+        
+    }
+}
+
+probe syscall.write {
+    if(pid() == $1 || pid() == $2){
+        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()))
+    }
+}
+
+probe syscall.lseek {
+    if(pid() == $1 || pid() == $2){
+        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()))
+    }
+}
