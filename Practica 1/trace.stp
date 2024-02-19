@@ -2,19 +2,19 @@
 
 probe syscall.read {
     if(pid() == $1 || pid() == $2){
-        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()))
+        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()-21600))
         
     }
 }
 
 probe syscall.write {
     if(pid() == $1 || pid() == $2){
-        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()))
+        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()-21600))
     }
 }
 
 probe syscall.lseek {
     if(pid() == $1 || pid() == $2){
-        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()))
+        printf("%d:%s(%s)\n",pid(),name,ctime(gettimeofday_s()-21600))
     }
 }

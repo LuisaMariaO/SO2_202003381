@@ -13,7 +13,7 @@ int c_write = 0;
 int c_read = 0;
 int c_seek = 0;
 
-pthread_t monitor_thread_id;
+
 
 volatile sig_atomic_t sigint_received = 0; // Variable compartida para indicar si se recibió la señal SIGINT
 
@@ -22,15 +22,37 @@ void ctrlc_handler(int signal) {
 }
 
 //Después de recibir el ctrl+c
-void stat(int pid1, int pid2, int monitor) {
+void stat(int pid1, int pid2, int monitor, int fd) {
     printf("\n");
     printf("Finalizando ejecución...\n");
-    printf("|-------------------------------------------------|\n");
-    printf("|Llamadas al sistema de los procesos hijo: %d      |\n",calls);
-    printf("|Llamadas write: %d                                |\n",c_write);
-    printf("|Llamadas read: %d                                 |\n",c_read);
-    printf("|Llamadas seek %d                                  |\n",c_seek);
-    printf("|-------------------------------------------------|\n");
+    char buff[1024];
+    char *action;
+    ssize_t bytes_read;
+    while ((bytes_read = read(fd, buff, sizeof(buff))) > 0) {
+        // Busca las acciones en el buffer
+        char *ptr = buff;
+        while ((action = strtok(ptr, "\n")) != NULL) {
+            ptr = NULL; // Siguiente llamada a strtok debe recibir NULL
+            // Incrementa el contador según la acción
+            if (strstr(action, "read") != NULL) {
+                c_read++;
+            } else if (strstr(action, "lseek") != NULL) {
+                c_seek++;
+            } else if (strstr(action, "write") != NULL) {
+                c_write++;
+            }
+        
+    }
+    }
+    calls = c_read + c_seek + c_write;
+
+    printf("-------------------------------------------------\n");
+    printf("Llamadas al sistema de los procesos hijo: %d      \n",calls);
+    printf("Llamadas write: %d                                \n",c_write);
+    printf("Llamadas read: %d                                 \n",c_read);
+    printf("Llamadas seek %d                                  \n",c_seek);
+    printf("-------------------------------------------------\n");
+    close(fd);
     kill(pid1,SIGKILL);
     kill(pid2,SIGKILL);
     kill(monitor, SIGKILL);
@@ -45,16 +67,7 @@ void monitor_syscalls(int pid1, int pid2) {
     system(command);
 }
 
-void *monitor_thread(void *args) {
-    
 
-    
-    int pid1 = *((int *)args);
-    int pid2 = *((int *)args + 1);
-    monitor_syscalls(pid1, pid2);
-    pthread_exit(NULL);
-    
-}
 
 int main() {
     signal(SIGINT, ctrlc_handler);
@@ -118,7 +131,7 @@ int main() {
             waitpid(pid2, &status, 0);
             waitpid(pid2, &status, 0);
             waitpid(monitor, &status, 0);
-            stat(pid1,pid2, monitor);
+            stat(pid1,pid2, monitor, fd);
 
             /*
             /*Se imprime el codigo de salida de los procesos hijos
