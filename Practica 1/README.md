@@ -80,6 +80,7 @@ void stat(int pid1, int pid2, int monitor, int fd) {
 }
 ~~~
 ### Método para monitorear el systemTap:
+Se realiza el comando para iniciar el systemTap y se redirigen las salidas al syscalls.log, para que las llamadas al sistema se almacenen en el archivo requerido.
 ~~~
 void monitor_syscalls(int pid1, int pid2) {
     
