@@ -105,7 +105,7 @@ int main() {
         
         if(pid2 == 0){
             // Código para el segundo proceso hijo
-            printf("Soy el proceso hijo 2\n");
+           // printf("Soy el proceso hijo 2\n");
 
             /*Se escriben los argumentos para el proceso hijo*/
             char *arg_Ptr[4];
@@ -117,7 +117,7 @@ int main() {
             /*Se ejecuta el ejecutable del proceso hijo*/
             execv("/home/luisa/Escritorio/Sopes2/SO2_202003381/Practica 1/child.bin", arg_Ptr);
         }else{
-            printf("Soy el proceso padre\n");
+            //printf("Soy el proceso padre\n");
 
             // Crear un hilo para monitorear las llamadas al sistema
             pid_t monitor = fork();

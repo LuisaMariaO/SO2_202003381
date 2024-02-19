@@ -27,7 +27,7 @@ char random_char() {
 
 int main(int argc, char *argv[]) {
     srand(time(NULL) + getpid()); //seed único para lograr números aleatorios
-    printf("\nHola, soy tu hijo\n");
+    //printf("\nHola, soy tu hijo\n");
     fdch = open("practica1.txt", O_RDWR, 0777); //Abro el archivo en modo lectura y escritura
     //Manejador de señales para SIGINT (Ctrl+C)
     signal(SIGINT, ctrlc_handler);
