@@ -63,7 +63,7 @@ void stat(int pid1, int pid2, int monitor, int fd) {
 void monitor_syscalls(int pid1, int pid2) {
     
     char command[100];
-    sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " > syscalls.log 2>&1");
+    sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " > syscalls.log");
     system(command);
 }
 
