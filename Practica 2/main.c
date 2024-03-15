@@ -6,6 +6,9 @@
 #include<unistd.h>
 #include<semaphore.h>
 #include<stdbool.h>
+#include <regex.h>
+
+
 
 #define THREADS_USERS 3
 #define THREADS_OPERATIONS 4
@@ -21,7 +24,9 @@ struct usuario {
     int no_cuenta;
     char nombre[100];
     float saldo;
+    struct usuario* siguiente;
 };
+struct usuario* cabezaUsuarios = NULL;
 struct operacion {
     int operacion;
     int cuenta1;
@@ -48,22 +53,55 @@ typedef struct hilo_info {
   int *linea_leida_global;     // Puntero a la variable compartida
 } HiloInfo;
 
-bool existeCuenta(int cuenta){
-    
-    for(int i=0; i<MAX_USERS;i++){
-       // printf("%d %d",cuenta,usuarios[i].no_cuenta);
-        if(cuenta == usuarios[i].no_cuenta){
-            return true;
-        }
-    }
-    return false;
-}
+
 
 void inicializarUsuarios(){
     for(int i=0;i<MAX_USERS;i++){
         usuarios[i].no_cuenta=0;
         usuarios[i].saldo=0;
     }
+}
+void insertarUsuario(int numeroCuenta, char nombre[100], float saldo) {
+  struct usuario* nuevoNodo = (struct usuario*)malloc(sizeof(struct usuario));
+  nuevoNodo->no_cuenta = numeroCuenta;
+  strcpy(nuevoNodo->nombre, nombre);
+  nuevoNodo->saldo = saldo;
+  nuevoNodo->siguiente = cabezaUsuarios;
+  cabezaUsuarios = nuevoNodo;
+}
+
+void eliminarUsuario(int numeroCuenta) {
+  struct usuario* actual = cabezaUsuarios;
+  struct usuario* anterior;
+
+  while (actual != NULL && actual->no_cuenta != numeroCuenta) {
+    anterior = actual;
+    actual = actual->siguiente;
+  }
+
+  if (actual != NULL) {
+    if (actual == cabezaUsuarios) {
+      cabezaUsuarios = actual->siguiente;
+    } else {
+      anterior->siguiente = actual->siguiente;
+    }
+
+    free(actual);
+  }
+}
+
+bool existeCuenta(int numeroCuenta) {
+  struct usuario* actual = cabezaUsuarios;
+
+  while (actual != NULL) {
+    if (actual->no_cuenta == numeroCuenta) {
+      return true;
+    }
+
+    actual = actual->siguiente;
+  }
+
+  return false;
 }
 
 
@@ -76,13 +114,20 @@ char *leer_linea(FILE *archivo) {
 
   // Leer la línea del archivo
   bytes_leidos = getline(&linea, &tam_linea, archivo);
+  if (bytes_leidos != -1) {
+    // Verificar si el último carácter es un salto de línea
+    if (linea[bytes_leidos - 1] == '\n') {
+        // Reemplazar el salto de línea con el carácter nulo
+        linea[bytes_leidos - 1] = '\0';
+    }
+    // Ahora la cadena no tiene el carácter de salto de línea al final
+}
 
   if (bytes_leidos <= 0) {
     // Si no se pudo leer la línea, liberar la memoria y retornar NULL
     free(linea);
     linea = NULL;
   }
-
   return linea;
 }
 
@@ -93,9 +138,9 @@ void* cargarUsuarios(void* arg) {
  HiloInfo *info_hilo = (HiloInfo *)arg;
   char *linea;
   char *token;
-  int cuenta;
+  char cuenta[100];
   char nombre[100];
-  float saldo;
+  char saldo[100];
 
   // Bloquear el mutex antes de acceder a las variables compartidas
   pthread_mutex_lock(&(info_hilo->mutex));
@@ -112,25 +157,83 @@ void* cargarUsuarios(void* arg) {
         usuariosHilo3++;
     }
     // Analizando la información, si es correcta se almacena, de lo contrario se guarda un error
-    token = strtok(linea, ",");
-    cuenta = atoi(token);
+    
+  //printf("Línea %d->%s\n",*(info_hilo->linea_leida_global),linea);
+  //Guardo el número de cuenta
+  token = strtok(linea,",");
+  if (token != NULL) {
+    strcpy(cuenta, token); // Copiar el token a cuenta si no es NULL
+    }
+    //Guardo el nombre
+    token = strtok(NULL,",");
+    if(token!=NULL){
+    strcpy(nombre,token);
+    }
+    //Guardo el saldo
+    token = strtok(NULL,",");
+    if(token!=NULL){
+    strcpy(saldo,token);
+    }
+    regex_t regex;
+    int reti;
+    reti = regcomp(&regex, "^([0-9]+)$", REG_EXTENDED);
+    reti = regexec(&regex, cuenta, 0, NULL, 0);
 
-   
+    int reti2;
+reti2 = regcomp(&regex, "^[0-9]+([.][0-9]+)?$", REG_EXTENDED);
+reti2 = regexec(&regex, saldo, 0, NULL, 0);
+
+    if(reti==0){
+        //Continuar con el procesamiento de datos
+        if(!existeCuenta(atoi(cuenta))){
+            //Continuando el procesamiento
+            if(reti2==0){
+                //Continuando a almacenar el usuario
+                printf("%s\n",saldo);
+            }else{
+                printf("El valor no es un real positivo. Linea %d\n",*(info_hilo->linea_leida_global));
+            }
+        }else{
+            printf("Error: Ya existe la cuenta. Línea %d\n",*(info_hilo->linea_leida_global));
+        }
+
+
+    }else{
+        printf("El número de cuenta no es un entero positivo. Linea %d\n",*(info_hilo->linea_leida_global));
+    }
+  
+/*
+   token = strtok(linea, ",");
+    printf("%s ",token);
     //operaciones[n].cuenta1 = atoi(token);
-
+    
     
     //operaciones[n].cuenta2 = atoi(token);
-
-    if(cuenta==atoi(token) && cuenta>0){
+    regex_t regex;
+    int reti;
+    reti = regcomp(&regex, "^([0-9]+)$", REG_EXTENDED);
+    reti = regexec(&regex, token, 0, NULL, 0);
+    if(reti==0){
         //Continuar
+        cuenta = atoi(token);
          token = strtok(NULL, ",");
+         printf("%s ",token);
+         if(token!=NULL){
         strcpy(nombre,token);
-         if(existeCuenta(cuenta)){
+         }
+         if(!existeCuenta(cuenta)){
+           
         //Continuar
         token = strtok(NULL, ",");
-        saldo = atof(token);
-        if(saldo==atof(token) && saldo>0){
+        printf("%s\n",token);
+        reti = regcomp(&regex, "^[0-9]+(.[0-9]*)$", REG_EXTENDED);
+        reti = regexec(&regex, token, 0, NULL, 0);
+        if(reti==0){
+             saldo = atof(token);
             //Guardar
+            //printf("%5.2f",saldo);
+           // printf("%5.2f",atof(token));
+            
         }else{
             printf("El valor no es un real positivo. Linea %d\n",*(info_hilo->linea_leida_global));
         }
@@ -143,16 +246,16 @@ void* cargarUsuarios(void* arg) {
     }
    
     
-
+    */
 
     //printf("Hilo %d: Línea %d: %s\n", info_hilo->id, *(info_hilo->linea_leida_global), linea);
 
     // Liberar la memoria de la línea leída
     free(linea);
-
+    sleep(0.5);
     // Desbloquear el mutex antes de salir del bucle
     pthread_mutex_unlock(&(info_hilo->mutex));
-    sleep(0.5);
+    
   }
 
   // Cancelar el hilo
@@ -254,7 +357,7 @@ int main(){
                 printf("Leídos: %d\n",usuariosLeidos);
                 printf("Hilo1: %d\n",usuariosHilo1);
                 printf("Hilo2: %d\n",usuariosHilo2);
-                printf("Hilo: %d\n",usuariosHilo3);
+                printf("Hilo3: %d\n",usuariosHilo3);
                 // Cerrar el archivo
                 fclose(archivo);
 
