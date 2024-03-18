@@ -461,7 +461,7 @@ HiloInfo *info_hilo = (HiloInfo *)arg;
 
     // Liberar la memoria de la línea leída
     free(linea);
-    sleep(0.5);
+    sleep(0.6);
     // Desbloquear el mutex antes de salir del bucle
     pthread_mutex_unlock(&(info_hilo->mutex));
     
@@ -554,10 +554,10 @@ int main(){
                 fprintf(reporte,"------------------------------------------CARGA DE USUARIOS------------------------------------------\n");
                 fprintf(reporte,"Fecha: %s\n",fecha);
                 fprintf(reporte, "Usuarios cargados:\n"); // Escribir en el archivo
-                fprintf(reporte,"Hilo #1 : %d\n",usuariosHilo1);
+                fprintf(reporte,"Hilo #1 : %d\n",usuariosHilo1-1);
                 fprintf(reporte,"Hilo #2 : %d\n",usuariosHilo2);
                 fprintf(reporte,"Hilo #3 : %d\n",usuariosHilo3);
-                fprintf(reporte,"Total : %d\n",usuariosLeidos);
+                fprintf(reporte,"Total : %d\n",usuariosLeidos-1);
                 fprintf(reporte,"Errores:\n");
                 fprintf(reporte,"%s",erroresUsuarios);
                 fclose(reporte); // Cerrar el archivo
@@ -624,11 +624,11 @@ int main(){
                 fprintf(reporte_o,"------------------------------------------CARGA DE OPERACIONES------------------------------------------\n");
                 fprintf(reporte_o,"Fecha: %s\n",fecha_o);
                 fprintf(reporte_o, "Operaciones cargadas:\n"); // Escribir en el archivo
-                fprintf(reporte_o,"Hilo #1 : %d\n",operacionesHilo1);
+                fprintf(reporte_o,"Hilo #1 : %d\n",operacionesHilo1-1);
                 fprintf(reporte_o,"Hilo #2 : %d\n",operacionesHilo2);
                 fprintf(reporte_o,"Hilo #3 : %d\n",operacionesHilo3);
                 fprintf(reporte_o,"Hilo #4 : %d\n",operacionesHilo4);
-                fprintf(reporte_o,"Total : %d\n",operacionesLeidas);
+                fprintf(reporte_o,"Total : %d\n",operacionesLeidas-1);
                 fprintf(reporte_o,"Errores:\n");
                 fprintf(reporte_o,"%s",erroresOperaciones);
                 fclose(reporte_o); // Cerrar el archivo
