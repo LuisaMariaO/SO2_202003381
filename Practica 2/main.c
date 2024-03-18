@@ -205,7 +205,7 @@ reti2 = regexec(&regex, saldo, 0, NULL, 0);
 /*
    token = strtok(linea, ",");
     printf("%s ",token);
-    //operaciones[n].cuenta1 = atoi(token);
+    //operaciones[n].cuenta1 = atoi(token); 
     
     
     //operaciones[n].cuenta2 = atoi(token);
