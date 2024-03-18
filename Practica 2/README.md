@@ -128,3 +128,23 @@ void transferencia(int cuenta1, int cuenta2, float monto, int linea){
 }
 ~~~
 Los métodos que reciben como parámetro *línea* reciben 0 si se está realizando una operación individual, de esta manera el programa sabe si imprimir los errores en consola o se almacena para generar reportesa de carga.
+
+## Utilización de mutex
+La forma de utilización aplica para la carga de usuarios y de transacciones. Se utiliza un sleep de 0.5 en la carga de usuarios y de 0.6 en la carga de transacciones, esto para evitar que un solo hilo haga todo el trabajo y ayudar a la mejora de la concurrencia.
+~~~
+void* cargarOperaciones(void *arg){
+HiloInfo *info_hilo = (HiloInfo *)arg;
+ 
+  // Bloquear el mutex antes de acceder a las variables compartidas
+  pthread_mutex_lock(&(info_hilo->mutex));
+
+  
+    
+
+    ...
+    sleep(0.6);
+    // Desbloquear el mutex antes de salir del bucle
+    pthread_mutex_unlock(&(info_hilo->mutex));
+    
+  }
+~~~
